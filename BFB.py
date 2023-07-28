@@ -120,8 +120,8 @@ def optimize_BFB_timereg(x, y, C, tau, timreg, reg_norm, gammak_old, Xtk, Xt_old
     return P
 
 
-def gcg_proximal(a, b, M, lr, reg1, dh, f, df, G0=None, numItermax=10,
-        numInnerItermax=200, stopThr=1e-9, verbose=False, log=False):
+def gcg_proximal(a, b, M, lr, reg1, dh, f, df, dp, G0=None, numItermax=10,
+        numInnerItermax=200, stopThr=1e-9, verbose=False, log=False, path_cons=False, G_path=0):
     
     loop = 1
     
@@ -154,7 +154,10 @@ def gcg_proximal(a, b, M, lr, reg1, dh, f, df, G0=None, numItermax=10,
         old_fval = f_val
 
         # problem linearization
-        Mi = lr*M - dh(G) + lr * df(G)
+        if not path_cons:
+            Mi = lr*M - dh(G) + lr * df(G) 
+        else:
+            Mi = lr*M - dh(G) + lr * (df(G) + dp(G_path, G))
 
         # solve linear program with Sinkhorn
         # Gc = sinkhorn_stabilized(a,b, Mi, reg1, numItermax = numInnerItermax)

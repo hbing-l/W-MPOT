@@ -1,7 +1,7 @@
-# Continuous optimal transport
+# Multi-Path Continuous Domain Adaptation with Wasserstein-based Transfer Curriculum
 
-## Setting1: Half moon
+## Experiment1: ADNI
 
-## Setting2: Rotated Mnist
+## Experiment2: Battery Charging-discharging Capacity
 
-## Setting3: SOC of battery
+## Experiment3: Rotated MNIST

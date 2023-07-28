@@ -26,7 +26,7 @@ class DAClassifier:
     def adapt_target_to_source(self):
         pass
 
-    def fit(self, Xs=None, ys=None, Xt=None, treg=0, Gamma_old=None, Xt_old=None):
+    def fit(self, Xs=None, ys=None, Xt=None, treg=0, preg=0, Gamma_old=None, Xt_old=None, path_cons=False, G_path=0):
         self.Xs = Xs
         self.ys = ys
         self.Xt = Xt
@@ -34,6 +34,9 @@ class DAClassifier:
         self.treg = treg
         self.Gamma_old = Gamma_old
         self.Xt_old = Xt_old
+        self.preg = preg
+        self.path_cons = path_cons
+        self.G_path = G_path
 
         attempt_count = 0
         while attempt_count < self.max_attempts:
@@ -78,6 +81,18 @@ class DAClassifier:
                 temp = Gamma[self.ys == lab, i]
                 res += np.linalg.norm(temp, ord=2)
         return res
+
+    ## --------------- ##
+    ## path regulizer ## 
+    ## --------------- ##
+
+    def path_reg(self, Gamma0, Gamma):
+        path_reg = self.preg * np.linalg.norm((Gamma @ self.Xt - Gamma0 @ self.Xt), ord='fro') ** 2
+        return path_reg
+    
+    def grad_path_reg(self, Gamma0, Gamma):
+        _grad_path_reg = 2 * self.preg * (Gamma @ self.Xt - Gamma0 @ self.Xt) @ self.Xt.T
+        return _grad_path_reg
 
     def time_lasso_reg(self, Gamma):
         return self.lasso_reg(Gamma) + self.temp_reg(Gamma)
@@ -218,4 +233,4 @@ class OTBFBDAClassifier(DAClassifier):
         else:
             #self.Gamma = optimize_BFB_timereg(r, c, Cost, self.reg, self.treg, self.regnorm, self.Gamma_old, self.Xt,
             #                                  self.Xt_old, self.it, self.epochs, self.lr, seed=42, verbose=True)
-            self.Gamma, self.history = gcg_proximal(r, c, Cost, self.lr, self.reg, self.grad_entropic_reg, self.temp_reg, self.grad_temp_reg, verbose=False, log=self.verbose)
+            self.Gamma, self.history = gcg_proximal(r, c, Cost, self.lr, self.reg, self.grad_entropic_reg, self.temp_reg, self.grad_temp_reg, self.grad_path_reg, verbose=False, log=self.verbose, path_cons=self.path_cons, G_path=self.G_path)

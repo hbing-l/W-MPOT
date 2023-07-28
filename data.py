@@ -73,7 +73,111 @@ def load_mnist_data(dir_path, n_sample_source = 1000, n_sample_targets = 50, n_s
         ytest.append(y)
     
     return Xs, ys, Xt, yt, Xtest, ytest
+
+def load_mnist_data_test(dir_path, n_sample_source = 1000, n_sample_targets = 50, n_sample_test = 200, time_series = []):
+
+    Xs = np.zeros((n_sample_source, 28*28))
+    ys = np.zeros((n_sample_source, 1))
     
+    with open(os.path.join(dir_path, 'train-labels.csv'),'r', encoding='utf-8') as csvfile:
+        reader = csv.reader(csvfile)
+        rows = [row for row in reader]
+
+    img = 0
+    for i in range(0, n_sample_source):
+        index = i * 6
+        img_path = dir_path + rows[index][0]
+        img_label = int(rows[index][1])
+        img = cv2.imread(img_path, 0).reshape(1, -1)
+        Xs[i, :] = img
+        ys[i, 0] = img_label
+
+    Xs = Xs / 255
+    ys = ys.squeeze()
+
+    Xt_all_domain = []
+    yt_all_domain = []
+
+    Xt_all = []
+    yt_all = []
+    Xt_ = []
+    yt_ = []
+
+    Xt_random = []
+    yt_random = []
+
+    for j in range(5):
+        x = np.zeros((n_sample_targets, 28*28))
+        y = np.zeros((n_sample_targets, 1))
+        
+        for i in range(n_sample_targets):
+            index = i * 6 + j + 1
+            img_path = dir_path + rows[index][0]
+            img_label = int(rows[index][1])
+            img = cv2.imread(img_path, 0).reshape(1, -1)
+            x[i, :] = img
+            y[i, 0] = img_label
+        
+        x = x / 255
+        y = y.squeeze()
+        Xt_all_domain.append(x)
+        yt_all_domain.append(y)
+    
+    for j in time_series:
+        x = np.zeros((n_sample_test, 28*28))
+        y = np.zeros((n_sample_test, 1))
+        
+        for i in range(n_sample_test):
+
+            index = i * 6 + j + 1
+            img_path = dir_path + rows[index][0]
+            img_label = int(rows[index][1])
+            img = cv2.imread(img_path, 0).reshape(1, -1)
+            x[i, :] = img
+            y[i, 0] = img_label
+        
+        x = x / 255
+        y = y.squeeze()
+        Xt_all.append(x)
+        yt_all.append(y)
+
+
+        x = np.zeros((n_sample_targets, 28*28))
+        y = np.zeros((n_sample_targets, 1))
+        
+        for i in range(n_sample_targets):
+
+            index = i * 6 + j + 1
+            img_path = dir_path + rows[index][0]
+            img_label = int(rows[index][1])
+            img = cv2.imread(img_path, 0).reshape(1, -1)
+            x[i, :] = img
+            y[i, 0] = img_label
+        
+        x = x / 255
+        y = y.squeeze()
+        Xt_.append(x)
+        yt_.append(y)
+
+        x = np.zeros((n_sample_targets, 28*28))
+        y = np.zeros((n_sample_targets, 1))
+        
+        for i in range(n_sample_targets):
+            index1 = np.random.randint(10000, size=(1,))
+            index = index1[0]
+            img_path = dir_path + rows[index][0]
+            img_label = int(rows[index][1])
+            img = cv2.imread(img_path, 0).reshape(1, -1)
+            x[i, :] = img
+            y[i, 0] = img_label
+        
+        x = x / 255
+        y = y.squeeze()
+        Xt_random.append(x)
+        yt_random.append(y)
+
+    
+    return Xs, ys, Xt_all, yt_all, Xt_, yt_, Xt_random, yt_random, Xt_all_domain, yt_all_domain
 
 def load_battery_data(n_samples_source = 67, n_samples_targets = 10, time_length = 4, shuffle_or_not = False):
     dir = '/Users/liuhanbing/Desktop/code/out_SOC_005-075_excel/'
